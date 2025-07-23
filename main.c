@@ -11,12 +11,12 @@ int main(int argc, char *argv[]) {
 
     //open file
     if(avformat_open_input(&pFormatCtx, argv[1], NULL, 0, NULL) != 0){
-        perror("Could not open file");
+        perror("FL1: Could not open file");
         return -1; // call function and stop if open fails
     }
     // fun hat populates pformatctx->streams    
     if(avformat_find_stream_info(pFormatCtx, NULL) < 0) {
-        perror("Could not find stream info");
+        perror("FL2: Could not find stream info");
         return -1; // cant find stream info
     }
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     // pformat-> streams is an arr of ptrs
     av_dump_format(pFormatCtx, 0, argv[1], 0);
         
-    // look for a vid stream
+    //************ Look for a vid stream */
     AVCodeContext *pCodecCtxOrig = NULL;
     AVCodeContext *pCodecCtx = NULL;
     vidStream = -1;
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if(vidStream == -1) {
-        perror("No video stream found");
+        perror("FL3: No video stream found");
         return -1;
     } // No video find
 
@@ -45,6 +45,25 @@ int main(int argc, char *argv[]) {
 
     //*** Find Codec & open it */
     AVCodec *pCodec = NULL;
+    //find decoder
+    pCodec = avcodec_find_decoder(pCodeCtx->codec_id); 
+    if(pCodec == NULL ){
+        perror("CD 1: Unsupported codec!!");
+        return -1; // codec not identified or unsupported
+    }
+    //Copy context
+    pCodecCts = avcodec_alloc_context3(pCoded);
+    if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
+        perror("CD 2: Could not copy codec context! ");
+        return -1; // Error w/ copying cotext codec
+    }
+    // open codec
+    if(avcodec_open2(pCodeCtx, pCodec)  < 0) {
+        perror("CD 3: Could not open codec");
+        return -1;
+    }
+
+
     return 0;
 }
  
