@@ -111,14 +111,26 @@ int main(int argc, char *argv[]) {
                     pFrame->linesize, 0, pCodecCtx->height, pFrameRGb->data, pFrameRGB->linesize);
                 // save frame to disk
                 if(++i<=5) 
-                    SaveFrame(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
+                    SaveFrame(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i); // from saveframe.c
             }
 
         }
         av_free_packet(&packet); // free packet allocated
     }
 
-    
+    /* Done from READING and clean all up*/
+    av_free(buffer);
+    av_free(pFrameRGB);
+
+    // free yuv frame
+    av_free(pFrame);
+
+    //close codecs
+    avcodec_close(pCodecCtx);
+    avcodec_close(pCodecCtxOrig);
+
+    //close file video
+    avformat_close_input(&pFormatCtx);
 
     return 0;
 }
