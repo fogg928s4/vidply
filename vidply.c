@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "saveFrame.c"
+
 int main(int argc, char *argv[]) {
     av_register_all(); // Register all aval file format/codcs
     //struct w/ info
@@ -82,6 +84,41 @@ int main(int argc, char *argv[]) {
     avpicture_fill((AVPicture *) pFrameRGB, buffer,  PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
     
 
+    /* READING VIDEO Stream*/
+    struct SwsContext *sws_ctx = NULL;
+    int frameFinished;
+    AVPacket packet; // AV PACKETS
+    // initializing
+    sws_ctx = sws_getContext(pCodecCtx->width, 
+        pCodecCtx->height,
+        pCodecCtx->pix_fmt,
+        pCodecCtx->width, 
+        pCodecCtx->height,
+        PIX_FMT_RGB24,
+        SWS_BILINEAR,
+        NULL, NULL, NULL);
+    int i = 0;
+    // readeing frames  & STORE IT in &packet struc
+    while(av_read_frame(pFormatCtx, &packet) >= 0) {
+        // is packet from vid stream?
+        if(packet.stream_index == vidStream) {
+            avcodec_decode_video2(pCodeCtx, pFrame, &frameFinished, &packet);//Decode frame aka convert packet to frame
+
+            // Got the vid frame?
+            if(frameFinished) {
+                // convert to rgb type
+                sws_scale(sws_ctx, (unint8_t cont * const *) pFrame->data,
+                    pFrame->linesize, 0, pCodecCtx->height, pFrameRGb->data, pFrameRGB->linesize);
+                // save frame to disk
+                if(++i<=5) 
+                    SaveFrame(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
+            }
+
+        }
+        av_free_packet(&packet); // free packet allocated
+    }
+
+    
+
     return 0;
 }
- 
