@@ -1,6 +1,7 @@
-#include <libavcodec/avcode.h>
-#include <libavformat/avformat.h>
 #include <ffmpeg/swscale.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcode.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
