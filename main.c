@@ -44,6 +44,8 @@ int main(int argc, char *argv[]) {
     pCodecCtx = pFormatCtx->streams[vidStream]->codec; 
 
     //*** Find Codec & open it */
+    // We oughta not use the AVCodeContext from the vid stream directly
+    // copy it to use it by allocating memory
     AVCodec *pCodec = NULL;
     //find decoder
     pCodec = avcodec_find_decoder(pCodeCtx->codec_id); 
@@ -63,6 +65,22 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // *** Store each frame */
+    AVFrame *pFram = NULL, *pFrameRGB = NULL;
+    pFrame = av_frame_alloc(); // allocate vid frame
+    pFrameRGB = av_frame_alloc(); // allocate and AV Frame structure
+    if(pFrameRGB == NUL) { 
+        perror("VF 1: Error allocating frame");
+        return -1;
+    }
+    // get size required
+    unint8_t *buffer = NULL;
+    int numBytes = avpicture_get_size(PIC_FMT_RGB24, pCodecCtx->width, pCodecCtx->height); // size of pciture
+    buffer = (unint8_t *) av_malloc(numBytes * sizeof(unint8_t)); // malloc wrapper
+    /* asign parts of buffer to image planes in pFramRGB*/
+    // AVFrame is a superset of AVPicture
+    avpicture_fill((AVPicture *) pFrameRGB, buffer,  PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
+    
 
     return 0;
 }
